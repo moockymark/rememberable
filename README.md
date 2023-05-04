@@ -1,37 +1,139 @@
-### 3 分钟了解如何进入开发
+基于watson/rememberable的Laravel Builder 请求缓存，实现count、max等的缓存，使用方法与原包完全相同
 
-欢迎使用 Codeup，通过阅读以下内容，你可以快速熟悉 Codeup ，并立即开始今天的工作。
+Rememberable, Laravel 5 query cache
+===================================
 
-### 提交**文件**
+[![Total Downloads](https://poser.pugx.org/watson/rememberable/downloads.svg)](https://packagist.org/packages/watson/rememberable)
+[![Latest Stable Version](https://poser.pugx.org/watson/rememberable/v/stable.svg)](https://packagist.org/packages/watson/rememberable)
+[![Latest Unstable Version](https://poser.pugx.org/watson/rememberable/v/unstable.svg)](https://packagist.org/packages/watson/rememberable)
+[![License](https://poser.pugx.org/watson/rememberable/license.svg)](https://packagist.org/packages/watson/rememberable)
 
-首先，你需要了解在 Codeup 中如何提交代码文件，跟着文档「[__提交第一行代码__](https://thoughts.teambition.com/sharespace/5d88b152037db60015203fd3/docs/5dc4f6786b81620014ef7574)」一起操作试试看吧。
+Rememberable is an Eloquent trait for Laravel that adds `remember()` query methods. This makes it super easy to cache your query results for an adjustable amount of time.
 
-### 开启扫描
+```php
+// Get a the first user's posts and remember them for a day.
+User::first()->remember(now()->addDay())->posts()->get();
 
-开发过程中，为了更好的管理你的代码资产，Codeup 内置了「[__代码规约扫描__](https://thoughts.teambition.com/sharespace/5d88b152037db60015203fd3/docs/5dc4f68b6b81620014ef7588)」和「[__敏感信息检测__](https://thoughts.teambition.com/sharespace/5d88b152037db60015203fd3/docs/5dc4f6886b81620014ef7587)」服务，你可以在代码库设置-集成与服务中一键开启，开启后提交或合并请求的变更将自动触发扫描，并及时提供结果反馈。
+// You can also pass the number of seconds if you like (before Laravel 5.8 this will be interpreted as minutes).
+User::first()->remember(60 * 60 * 24)->posts()->get();
+```
 
-![](https://img.alicdn.com/tfs/TB1nRDatoz1gK0jSZLeXXb9kVXa-1122-380.png "")
+It works by simply remembering the SQL query that was used and storing the result. If the same query is attempted while the cache is persisted it will be retrieved from the store instead of hitting your database again.
 
-![](https://img.alicdn.com/tfs/TB1PrPatXY7gK0jSZKzXXaikpXa-1122-709.png "")
+## Installation
 
-### 代码评审
+Install using Composer, just as you would anything else.
 
-功能开发完毕后，通常你需要发起「[__代码合并和评审__](https://thoughts.teambition.com/sharespace/5d88b152037db60015203fd3/docs/5dc4f6876b81620014ef7585)」，Codeup 支持多人协作的代码评审服务，你可以通过「[__保护分支__](https://thoughts.teambition.com/sharespace/5d88b152037db60015203fd3/docs/5dc4f68e6b81620014ef758c)」策略及「[__合并请求设置__](https://thoughts.teambition.com/sharespace/5d88b152037db60015203fd3/docs/5dc4f68f6b81620014ef758d)」对合并过程进行流程化管控，同时提供 WebIDE 在线代码评审及冲突解决能力，让你的评审过程更加流畅。
+```sh
+composer require moocky/rememberable
+```
 
-![](https://img.alicdn.com/tfs/TB1XHrctkP2gK0jSZPxXXacQpXa-1432-887.png "")
+The easiest way to get started with Eloquent is to create an abstract `App\Model` which you can extend your application models from. In this base model you can import the rememberable trait which will extend the same caching functionality to any queries you build off your model.
 
-![](https://img.alicdn.com/tfs/TB1V3fctoY1gK0jSZFMXXaWcVXa-1432-600.png "")
+```php
+<?php
+namespace App;
 
-### 编写文档
+use Moocky\Rememberable\Rememberable;
+use Illuminate\Database\Eloquent\Model as Eloquent;
 
-项目推进过程中，你的经验和感悟可以直接记录到 Codeup 代码库的「[__文档__](https://thoughts.teambition.com/sharespace/5d88b152037db60015203fd3/docs/5e13107eedac6e001bd84889)」内，让智慧可视化。
+abstract class Model extends Eloquent
+{
+    use Rememberable;
+}
+```
 
-![](https://img.alicdn.com/tfs/TB1BN2ateT2gK0jSZFvXXXnFXXa-1432-700.png "")
+Now, just ensure that your application models from this new `App\Model` instead of Eloquent.
 
-### 成员协作
+```php
+<?php
+namespace App;
 
-是时候邀请成员一起编写卓越的代码工程了，请点击右上角「成员」邀请你的小伙伴开始协作吧！
+class Post extends Model
+{
+    //
+}
+```
 
-### 更多
+Alternatively, you can simply apply the trait to each and every model you wish to use `remember()` on.
 
-Git 使用教学、高级功能指引等更多说明，参见[__Codeup帮助文档__](https://thoughts.teambition.com/sharespace/5d88b152037db60015203fd3/docs/5dc4f6756b81620014ef7571)。
+## Usage
+
+Using the remember method is super simple. Just pass the number of seconds you want to store the result of that query in the cache for, and whenever the same query is called within that time frame the result will be pulled from the cache, rather than from the database again.
+
+```php
+// Remember the number of users for an hour.
+$users = User::remember(60 * 60)->count();
+```
+
+### Cache tags
+
+If you want to tag certain queries you can add `cacheTags('tag_name')` to your query. Please notice that cache tags are not supported by all cache drivers.
+
+```php
+// Remember the number of users for an hour and tag it with 'user_queries'
+User::remember(60 * 60)->cacheTags('user_queries')->count();
+```
+
+### Cache prefix
+
+If you want a unique prefix added to the cache key for each of your queries (say, if your cache doesn't support tagging), you can add `prefix('prefix')` to your query.
+
+```php
+// Remember the number of users for an hour and prefix the key with 'users'
+User::remember(60 * 60)->prefix('users')->count();
+```
+
+Alternatively, you can add the `$rememberCachePrefix` property to your model to always use that cache prefix.
+
+### Cache driver
+
+If you want to use a custom cache driver (defined in config/cache.php) you can add `cacheDriver('cacheDriver')` to your query.
+
+```php
+// Remember the number of users for an hour using redis as cache driver
+User::remember(60 * 60)->cacheDriver('redis')->count();
+```
+
+Alternatively, you can add the `$rememberCacheDriver` property to your model to always use that cache driver.
+
+#### Model wide cache tag
+
+You can set a cache tag for all queries of a model by setting the `$rememberCacheTag` property with an unique string that should be used to tag the queries.
+
+### Relationships
+
+Validating works by caching queries on a query-by-query basis. This means that when you perform eager-loading those additional queries will not be cached as well unless explicitly specified. You can do that by using a callback with your eager-loads.
+
+```php
+$users = User::where("id", ">", "1")
+    ->with(['posts' => function ($q) { $q->remember(60 * 60); }])
+    ->remember(60 * 60)
+    ->take(5)
+    ->get();
+```
+
+### Always enable
+
+You can opt-in to cache all queries of a model by setting the `$rememberFor` property with the number of seconds you want to cache results for. Use this feature with caution as it could lead to unexpected behaviour and stale data in your app if you're not familiar with how it works.
+
+### Cache flushing
+
+Based on the architecture of the package it's not possible to delete the cache for a single query. But if you tagged any queries using cache tags, you are able to flush the cache for the tag:
+
+```php
+User::flushCache('user_queries');
+```
+
+If you used the `$rememberCacheTag` property you can use the method without a parameter and the caches for the tag set by `$rememberCacheTag` are flushed:
+
+```php
+User::flushCache();
+```
+### Skipping cache
+
+If you need to disable cache for a particular query, you can use the `dontRemember` method:
+
+```php
+User::latest()->dontRemember()->get();
+```
