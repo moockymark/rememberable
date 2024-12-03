@@ -152,7 +152,7 @@ class Builder extends \Illuminate\Database\Query\Builder
   public function aggregateCached($function, $columns = ['*'])
   {
     if (is_null($this->cacheSeconds)) {
-      return call_user_func('parent::'. $function, $column);
+      return call_user_func('parent::'. $function, Arr::first($columns));
     }
     if (is_null($this->columns)) {
       $this->columns = $columns;
