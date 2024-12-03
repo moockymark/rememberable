@@ -1,12 +1,4 @@
-基于watson/rememberable的Laravel Builder 请求缓存，实现count、max等的缓存，使用方法与原包完全相同
-
-Rememberable, Laravel 5 query cache
-===================================
-
-[![Total Downloads](https://poser.pugx.org/watson/rememberable/downloads.svg)](https://packagist.org/packages/watson/rememberable)
-[![Latest Stable Version](https://poser.pugx.org/watson/rememberable/v/stable.svg)](https://packagist.org/packages/watson/rememberable)
-[![Latest Unstable Version](https://poser.pugx.org/watson/rememberable/v/unstable.svg)](https://packagist.org/packages/watson/rememberable)
-[![License](https://poser.pugx.org/watson/rememberable/license.svg)](https://packagist.org/packages/watson/rememberable)
+基于watson/rememberable的Laravel Builder 请求缓存，实现count、max、min、sum、avg等的缓存，使用方法与原包完全相同
 
 Rememberable is an Eloquent trait for Laravel that adds `remember()` query methods. This makes it super easy to cache your query results for an adjustable amount of time.
 

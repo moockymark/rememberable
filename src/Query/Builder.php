@@ -98,26 +98,7 @@ class Builder extends \Illuminate\Database\Query\Builder
    */
   public function count($columns = '*')
   {
-    if ( ! is_null($this->cacheSeconds)) {
-      return $this->aggregateCached(__FUNCTION__, Arr::wrap($columns));
-    }
-
-    return parent::count($columns);
-  }
-
-  /**
-   * Retrieve the minimum value of a given column.
-   *
-   * @param  \Illuminate\Contracts\Database\Query\Expression|string  $column
-   * @return mixed
-   */
-  public function min($column)
-  {
-    if ( ! is_null($this->cacheSeconds)) {
-      return $this->aggregateCached(__FUNCTION__, [$column]);
-    }
-
-    return parent::min($column);
+		return $this->aggregateCached(__FUNCTION__, Arr::wrap($columns));
   }
 
   /**
@@ -128,12 +109,20 @@ class Builder extends \Illuminate\Database\Query\Builder
    */
   public function max($column)
   {
-    if ( ! is_null($this->cacheSeconds)) {
-      return $this->aggregateCached(__FUNCTION__, [$column]);
-    }
-
-    return parent::max($column);
+		return $this->aggregateCached(__FUNCTION__, [$column]);
   }
+
+  /**
+   * Retrieve the minimum value of a given column.
+   *
+   * @param  \Illuminate\Contracts\Database\Query\Expression|string  $column
+   * @return mixed
+   */
+  public function min($column)
+  {
+		return $this->aggregateCached(__FUNCTION__, [$column]);
+  }
+
   /**
    * Retrieve the maximum value of a given column.
    *
@@ -142,11 +131,7 @@ class Builder extends \Illuminate\Database\Query\Builder
    */
   public function sum($column)
   {
-    if ( ! is_null($this->cacheSeconds)) {
-      return 0 + $this->aggregateCached(__FUNCTION__, [$column]);
-    }
-
-    return parent::sum($column);
+    return 0 + $this->aggregateCached(__FUNCTION__, [$column]);
   }
   /**
    * Retrieve the maximum value of a given column.
@@ -156,11 +141,7 @@ class Builder extends \Illuminate\Database\Query\Builder
    */
   public function avg($column)
   {
-    if ( ! is_null($this->cacheSeconds)) {
-      return $this->aggregateCached(__FUNCTION__, [$column]);
-    }
-
-    return parent::avg($column);
+		return $this->aggregateCached(__FUNCTION__, [$column]);
   }
   /**
    * Execute the cached count query statement.
@@ -170,6 +151,9 @@ class Builder extends \Illuminate\Database\Query\Builder
    */
   public function aggregateCached($function, $columns = ['*'])
   {
+    if (is_null($this->cacheSeconds)) {
+      return call_user_func('parent::'. $function, $column);
+    }
     if (is_null($this->columns)) {
       $this->columns = $columns;
     }
